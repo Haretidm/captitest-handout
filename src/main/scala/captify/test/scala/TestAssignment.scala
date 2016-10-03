@@ -4,6 +4,7 @@ import scala.util.Try
 
 import SparseIterators._
 
+
 /**
  * Here are the functions to fill in.
  */
@@ -19,7 +20,9 @@ object TestAssignment {
    * @param sampleSize quantity of elements returned
    * @return sampleAfter(iteratorFromOne, 1, 2) should be same as to Seq[BigInt](2,3,4).toIterator 
    */
-  def sampleAfter(iterator: Iterator[BigInt], after: Int, sampleSize: Int): Iterator[BigInt] = ???
+  def sampleAfter(iterator: Iterator[BigInt], after: Int, sampleSize: Int): Iterator[BigInt] = {
+    iterator.toStream.slice(after, after + sampleSize).toIterator
+  }
 
   /**
    * Get value by index from given iterator.
@@ -31,7 +34,7 @@ object TestAssignment {
    * @param position zero-based
    * @return value at given position
    */
-  def valueAt(iterator: Iterator[BigInt], position: Int): BigInt = ???
+  def valueAt(iterator: Iterator[BigInt], position: Int): BigInt = iterator.toStream(position)
 
   /**
    * Produce an iterator which generates values from given subset of input iterators.
@@ -45,7 +48,7 @@ object TestAssignment {
    * @param iterators to be merged
    * @return Iterator with all elements and ascending sorting retained
    */
-  def mergeIterators(iterators: Seq[Iterator[BigInt]]): Iterator[BigInt] = ???
+  def mergeIterators(iterators: Seq[Iterator[BigInt]]): Iterator[BigInt] = iterators.foldLeft(Iterator[BigInt]())(_ ++ _)
 
   /**
    * How much elements, on average, are included in sparse stream from the general sequence
@@ -73,6 +76,14 @@ object TestAssignment {
    *
    * @return Seq of (Sparsity, Try[Approximation]) pairs
    */
-  def approximatesFor(sparsityMin: Int, sparsityMax: Int, extent: Int): Seq[(Int,Try[Double])] = ???
+  def approximatesFor(sparsityMin: Int, sparsityMax: Int, extent: Int): Seq[(Int, Try[Double])] = {
+    val trieMap = new scala.collection.concurrent.TrieMap[Int, Try[Double]]()
+    (sparsityMin to sparsityMax).map {
+      case i => {
+        trieMap.put(i, Try(approximateSparsity(i, extent)))
+      }
+    }
+    trieMap.toSeq
+  }
 
 }
