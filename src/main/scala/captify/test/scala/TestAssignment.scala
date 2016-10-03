@@ -78,7 +78,7 @@ object TestAssignment {
    */
   def approximatesFor(sparsityMin: Int, sparsityMax: Int, extent: Int): Seq[(Int, Try[Double])] = {
     val trieMap = new scala.collection.concurrent.TrieMap[Int, Try[Double]]()
-    (sparsityMin to sparsityMax).map {
+    (sparsityMin to sparsityMax).par.map {
       case i => {
         trieMap.put(i, Try(approximateSparsity(i, extent)))
       }
