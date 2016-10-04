@@ -2,17 +2,25 @@ package captify.test.java;
 
 import java.math.BigInteger;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import static captify.test.java.SparseIterators.*;
 
 public class TestAssignment {
+	
+   private static final ExecutorService executorService = Executors.newCachedThreadPool();
+	
   /**
    * Generate a contiguous sub-sample from given sequence.
    *
@@ -25,7 +33,7 @@ public class TestAssignment {
    * @return sampleAfter(iteratorFromOne, 1, 2) should be same as to Seq[BigInt](2,3,4).toIterator
    */
   public static Iterator<BigInteger> sampleAfter(Iterator<BigInteger> iterator, int after, int sampleSize) {
-    throw new java.lang.UnsupportedOperationException("please implement this method");
+   return  toIteratorFromStream(iterator).skip(after).limit(sampleSize).iterator();
   }
 
   /**
@@ -39,7 +47,7 @@ public class TestAssignment {
    * @return value at given position
    */
   public static BigInteger valueAt(Iterator<BigInteger> iterator, int position) {
-    throw new java.lang.UnsupportedOperationException("please implement this method");
+	  return toIteratorFromStream(iterator).skip(position - 1).limit(1).iterator().next(); 
   }
 
   /**
@@ -55,7 +63,7 @@ public class TestAssignment {
    * @return Iterator with all elements and ascending sorting retained
    */
   public static Iterator<BigInteger> mergeIterators(List<Iterator<BigInteger>> iterators) {
-    throw new java.lang.UnsupportedOperationException("please implement this method");
+	  return iterators.stream().flatMap(m -> toIteratorFromStream(m)).iterator();
   }
 
   /**
@@ -92,7 +100,16 @@ public class TestAssignment {
    * @return Map from Sparsity to Future[Approximation]
    */
   public static Map<Integer, Future<Double>> approximatesFor(int sparsityMin, int sparsityMax, int extent) {
-    throw new java.lang.UnsupportedOperationException("please implement this method");
+	final Map<Integer, Future<Double>> result  = new TreeMap<Integer, Future<Double>>();
+	IntStream.range(sparsityMin, sparsityMax).forEach(i -> {
+		result.put(i, executorService.submit(() -> approximateSparsity(i, extent)));
+	});
+	return result;
   }
 
+  
+  private static <T> Stream<T> toIteratorFromStream(final Iterator<T> iterator) {
+      final Iterable<T> iterable = () -> iterator;
+      return StreamSupport.stream(iterable.spliterator(), false);
+  }
 }

@@ -83,7 +83,7 @@ object TestAssignment {
         trieMap.put(i, Try(approximateSparsity(i, extent)))
       }
     }
-    trieMap.toSeq
+    trieMap.toSeq.sortBy(_._1)
   }
 
 }
